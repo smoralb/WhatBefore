@@ -1,0 +1,123 @@
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+
+export default function Leaderboard({ currentScore, onRestart, onHome }) {
+  const [entries, setEntries] = useState([]);
+  const [isNewHighScore, setIsNewHighScore] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("timelineDuelLeaderboard");
+    const parsed = saved ? JSON.parse(saved) : [];
+    
+    const newEntry = {
+      id: Date.now(),
+      score: currentScore,
+      date: new Date().toLocaleDateString(),
+    };
+    
+    const allEntries = [...parsed, newEntry];
+    const top10 = allEntries
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+    
+    const isTop = top10.find(e => e.id === newEntry.id);
+    setIsNewHighScore(!!isTop && top10[0].id === newEntry.id);
+    
+    localStorage.setItem("timelineDuelLeaderboard", JSON.stringify(top10));
+    setEntries(top10);
+  }, [currentScore]);
+
+  const getRankClass = (index) => {
+    if (index === 0) return "text-[#FFD700]";
+    if (index === 1) return "text-gray-400";
+    if (index === 2) return "text-orange-400";
+    return "text-black";
+  };
+
+  const getRankIcon = (index) => {
+    if (index === 0) return "👑";
+    if (index === 1) return "🥈";
+    if (index === 2) return "🥉";
+    return `#${index + 1}`;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center gap-8 w-full max-w-md"
+    >
+      <div className="mem-shape-circle w-16 h-16 bg-[#98FB98] border-4 border-black absolute" style={{ top: '10%', left: '10%' }}></div>
+      <div className="mem-shape-star w-12 h-12 bg-[#FFD700] border-4 border-black absolute" style={{ top: '15%', right: '15%' }}></div>
+
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        className="mem-card-pink brutal-border brutal-shadow p-6 text-center"
+      >
+        <h2 className="text-3xl md:text-4xl font-black text-white text-center">
+          HIGH SCORES
+        </h2>
+      </motion.div>
+
+      {isNewHighScore && (
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1, rotate: 5 }}
+          className="mem-card-yellow brutal-border brutal-shadow p-4"
+        >
+          <span className="text-black font-black text-xl">NEW HIGH SCORE!</span>
+        </motion.div>
+      )}
+
+      <div className="w-full mem-card brutal-border p-1">
+        <div className="mem-card-pink brutal-border-b-0 p-2">
+          <div className="bg-white brutal-border grid grid-cols-3 p-3 font-black text-sm md:text-base">
+            <span className="text-black">RANK</span>
+            <span className="text-black text-center">SCORE</span>
+            <span className="text-black text-right">DATE</span>
+          </div>
+        </div>
+        
+        <div className="mem-card-coral p-1">
+          {entries.map((entry, index) => (
+            <motion.div
+              key={entry.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-white border-4 border-black grid grid-cols-3 p-3 font-bold text-sm md:text-base"
+            >
+              <span className={`${getRankClass(index)} text-lg`}>
+                {getRankIcon(index)}
+              </span>
+              <span className="text-[#FF69B4] text-center text-lg font-black">{entry.score}</span>
+              <span className="text-black text-right text-xs">{entry.date}</span>
+            </motion.div>
+          ))}
+          
+          {entries.length === 0 && (
+            <div className="bg-white border-4 border-black p-6 text-center">
+              <span className="text-black font-bold">NO SCORES YET</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex gap-4 w-full">
+        <button
+          onClick={onRestart}
+          className="mem-btn mem-btn-yellow text-black font-black text-lg py-4 px-8 cursor-pointer flex-1"
+        >
+          PLAY AGAIN
+        </button>
+        <button
+          onClick={onHome}
+          className="mem-btn mem-btn-sky font-black text-lg py-4 px-8 cursor-pointer flex-1"
+        >
+          MAIN MENU
+        </button>
+      </div>
+    </motion.div>
+  );
+}

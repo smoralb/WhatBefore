@@ -1,79 +1,114 @@
-export default function Home({ onStart }) {
+import { motion } from "framer-motion";
+
+const MemphisShape = ({ type, color, top, left, delay, rotate, size = "" }) => {
+  const variants = {
+    animate: {
+      y: [0, -30, 0],
+      rotate: [rotate, rotate + 15, rotate],
+      transition: {
+        duration: 5 + Math.random() * 3,
+        repeat: Infinity,
+        delay: delay,
+        ease: "easeInOut"
+      }
+    }
+  };
+
   return (
-    <div className="w-full min-h-screen relative overflow-x-hidden">
-      <div className="neo-memphis-pattern" />
+    <motion.div
+      variants={variants}
+      animate="animate"
+      className={`absolute z-10 ${type} ${size}`}
+      style={{ top, left, backgroundColor: color }}
+    />
+  );
+};
+
+export default function Home({ onStart }) {
+  const shapes = [
+    // Formas originales
+    { type: "nb-zigzag", top: "10%", left: "5%", rotate: 15, delay: 0 },
+    { type: "nb-squiggle", top: "20%", left: "85%", rotate: -10, delay: 0.5 },
+    { type: "nb-triangle", top: "70%", left: "10%", rotate: 45, delay: 1, color: "transparent" },
+    { type: "w-12 h-12 rounded-full border-4 border-black bg-nb-pink", top: "15%", left: "40%", rotate: 0, delay: 1.5 },
+    { type: "w-16 h-16 border-4 border-black bg-nb-purple rotate-12", top: "80%", left: "75%", rotate: 12, delay: 2 },
+    { type: "nb-zigzag", top: "60%", left: "80%", rotate: -20, delay: 2.5 },
+    { type: "nb-squiggle", top: "85%", left: "20%", rotate: 5, delay: 3 },
+    
+    // Nuevas formas añadidas
+    { type: "w-8 h-32 border-4 border-black bg-nb-yellow rotate-45", top: "5%", left: "70%", rotate: 45, delay: 0.2 },
+    { type: "w-20 h-20 rounded-full border-4 border-black bg-nb-teal", top: "45%", left: "5%", rotate: 0, delay: 0.8 },
+    { type: "nb-triangle", top: "10%", left: "25%", rotate: -15, delay: 1.2, color: "transparent" },
+    { type: "nb-zigzag", top: "40%", left: "90%", rotate: 90, delay: 1.8 },
+    { type: "w-14 h-14 border-4 border-black bg-nb-pink -rotate-12", top: "75%", left: "45%", rotate: -12, delay: 2.2 },
+    { type: "nb-squiggle", top: "50%", left: "15%", rotate: 45, delay: 0.4 },
+    { type: "w-10 h-10 rounded-full border-4 border-black bg-white", top: "30%", left: "30%", rotate: 0, delay: 1.1 },
+    { type: "w-6 h-24 border-4 border-black bg-nb-purple rotate-90", top: "90%", left: "60%", rotate: 90, delay: 2.8 },
+    { type: "w-16 h-4 border-4 border-black bg-nb-yellow", top: "55%", left: "35%", rotate: 0, delay: 0.6 },
+    { type: "w-12 h-12 border-4 border-black bg-nb-teal rotate-45", top: "5%", left: "90%", rotate: 45, delay: 1.4 }
+  ];
+
+  return (
+    <div className="w-full min-h-screen bg-memphis-main flex flex-col items-center justify-center p-4 relative overflow-hidden">
       
-      {/* Navbar */}
-      <nav className="w-full h-20 border-b-4 border-black flex items-center justify-between px-8 md:px-16 bg-white sticky top-0 z-50">
-        <h2 className="text-2xl md:text-3xl font-black tracking-tighter">WHATBEFORE</h2>
-        <div className="hidden md:flex gap-8 font-bold">
-          <a href="#" className="hover:underline">DESIGN</a>
-          <a href="#" className="hover:underline">RETRO</a>
-          <a href="#" className="hover:underline">BRUTAL</a>
-        </div>
-      </nav>
+      {/* Scattered Shapes */}
+      {shapes.map((shape, i) => (
+        <MemphisShape key={i} {...shape} />
+      ))}
 
-      {/* Hero Section */}
-      <section className="flex flex-col md:flex-row items-center px-8 md:px-16 py-12 md:py-24 gap-12 max-w-7xl mx-auto">
-        <div className="flex-1 space-y-8">
-          <h1 className="nb-title text-6xl md:text-8xl">
-            NEO BRUTALISM <br /> 
-            <span className="bg-nb-pink p-2 inline-block transform rotate-2">MEETS 90S</span> <br />
-            RETRO
+      {/* Main Composition */}
+      <motion.div 
+        initial={{ scale: 0, rotate: -10 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+        className="burst-container w-[320px] h-[320px] md:w-[550px] md:h-[550px] mb-12"
+      >
+        <div className="burst-shadow" />
+        <div className="burst-main">
+          <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-center leading-none">
+            <span className="text-nb-pink">What</span><br />
+            <span className="text-nb-purple">Before</span><br />
+            <span className="text-nb-teal">!</span>
           </h1>
-          
-          <p className="text-xl md:text-2xl max-w-md font-medium border-l-8 border-nb-purple pl-4">
-            Bold strokes, loud colors, and geometric chaos. The Memphis style redefined for the modern web.
+        </div>
+      </motion.div>
+
+      {/* Action Area */}
+      <div className="relative z-20 flex flex-col items-center gap-8">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+          className="bg-white border-4 border-black p-4 brutal-shadow-sm rotate-2"
+        >
+          <p className="font-black text-xl md:text-2xl tracking-tighter uppercase">
+            ▼ Insert Coin to Start ▼
           </p>
+        </motion.div>
 
-          <button
-            onClick={onStart}
-            className="nb-btn text-2xl"
-          >
-            EXPLORE THE CHAOS
-          </button>
-        </div>
-
-        <div className="flex-1 relative">
-          <div className="nb-card w-full aspect-square bg-white overflow-hidden p-2">
-            <img 
-              src="/design-references/memphis-pattern.webp" 
-              alt="Memphis Pattern" 
-              className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500"
-              onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1000&auto=format&fit=crop";
-              }}
-            />
-          </div>
-          {/* Decorative shapes */}
-          <div className="absolute -top-6 -right-6 w-24 h-24 bg-nb-teal border-4 border-black rounded-full -z-10 shadow-[8px_8px_0px_black]" />
-          <div className="absolute -bottom-6 -left-6 w-0 h-0 border-l-[50px] border-l-transparent border-r-[50px] border-r-transparent border-b-[80px] border-b-nb-yellow -z-10 drop-shadow-[8px_8px_0px_black]" />
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="bg-white border-t-4 border-black py-20 px-8">
-        <div className="max-w-7xl mx-auto text-center space-y-16">
-          <h2 className="nb-title text-5xl md:text-7xl">RADICAL FEATURES</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <div className="nb-card bg-nb-teal p-10 space-y-4 text-left">
-              <h3 className="text-3xl font-black">BOLD STROKES</h3>
-              <p className="text-lg">Everything is defined by strong, black outlines that refuse to be ignored.</p>
-            </div>
-            
-            <div className="nb-card bg-nb-pink p-10 space-y-4 text-left md:translate-y-8">
-              <h3 className="text-3xl font-black">VIVID COLORS</h3>
-              <p className="text-lg">A palette that screams 1992. High saturation, low hesitation.</p>
-            </div>
-            
-            <div className="nb-card bg-nb-purple p-10 space-y-4 text-left">
-              <h3 className="text-3xl font-black">HARD SHADOWS</h3>
-              <p className="text-lg">No blurs. No gradients. Just solid, unapologetic geometry.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+        <motion.button
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          whileHover={{ scale: 1.1, rotate: -2 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={onStart}
+          className="nb-btn text-3xl md:text-6xl relative overflow-hidden"
+        >
+          {/* Pointillism Pattern Layer */}
+          <div className="absolute inset-0 opacity-25 pointer-events-none" 
+               style={{ 
+                 backgroundImage: 'radial-gradient(black 2px, transparent 2px), radial-gradient(black 2px, transparent 2px)', 
+                 backgroundSize: '16px 16px',
+                 backgroundPosition: '0 0, 8px 8px' 
+               }} />
+          <span className="relative z-10">Jugar ahora</span>
+        </motion.button>
+      </div>
+      
+      {/* Background Dots Grid decoration */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none z-0" 
+           style={{ backgroundImage: 'radial-gradient(black 2px, transparent 2px)', backgroundSize: '20px 20px' }} />
     </div>
   );
 }

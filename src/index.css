@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Press+Start+2P&family=Bangers&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -30,7 +30,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Fondo Memphis */
 .bg-memphis-main {
   background-color: #0047AB;
   background-image: 
@@ -40,64 +39,43 @@ body {
   position: relative;
 }
 
-/* Formas Memphis */
-.nb-zigzag {
-  width: 100px;
-  height: 40px;
-  background: var(--nb-yellow);
-  clip-path: polygon(0% 0%, 20% 100%, 40% 0%, 60% 100%, 80% 0%, 100% 100%, 100% 80%, 80% -20%, 60% 80%, 40% -20%, 20% 80%, 0% -20%);
-  border: 4px solid black;
-}
-
-.nb-squiggle {
-  width: 120px;
-  height: 20px;
-  background: var(--nb-pink);
-  mask-image: linear-gradient(to right, black 50%, transparent 50%);
-  mask-size: 20px 20px;
-  border-bottom: 6px dashed black;
-}
-
-.nb-triangle {
-  width: 0;
-  height: 0;
-  border-left: 40px solid transparent;
-  border-right: 40px solid transparent;
-  border-bottom: 70px solid var(--nb-teal);
-  filter: drop-shadow(8px 8px 0px black);
-}
-
-/* Logo Multicapa */
-.burst-container {
-  position: relative;
+/* Carteles de Feedback */
+.feedback-overlay {
+  position: fixed;
+  top: 15%;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 50;
+  pointer-events: none;
 }
 
-.burst-shadow {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  width: 100%;
-  height: 100%;
-  background: black;
-  clip-path: polygon(100% 50%, 90% 60%, 100% 70%, 80% 70%, 85% 90%, 70% 80%, 70% 100%, 50% 90%, 30% 100%, 30% 80%, 15% 90%, 20% 70%, 0% 70%, 10% 60%, 0% 50%, 10% 40%, 0% 30%, 20% 30%, 15% 10%, 30% 20%, 30% 0%, 50% 10%, 70% 0%, 70% 20%, 85% 10%, 80% 30%, 100% 30%, 90% 40%);
-  z-index: 1;
-}
-
-.burst-main {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: white;
+.feedback-stamp {
+  padding: 1.5rem 3rem;
   border: 6px solid black;
-  clip-path: polygon(100% 50%, 90% 60%, 100% 70%, 80% 70%, 85% 90%, 70% 80%, 70% 100%, 50% 90%, 30% 100%, 30% 80%, 15% 90%, 20% 70%, 0% 70%, 10% 60%, 0% 50%, 10% 40%, 0% 30%, 20% 30%, 15% 10%, 30% 20%, 30% 0%, 50% 10%, 70% 0%, 70% 20%, 85% 10%, 80% 30%, 100% 30%, 90% 40%);
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 50px;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 3rem;
+  box-shadow: 10px 10px 0px black;
+}
+
+.stamp-correct {
+  background: var(--nb-teal);
+  color: black;
+}
+
+.stamp-wrong {
+  background: var(--nb-pink);
+  color: black;
+}
+
+.nb-card {
+  background: white;
+  border: 4px solid var(--nb-border);
+  box-shadow: 12px 12px 0px var(--nb-border);
+  transition: transform 0.2s;
 }
 
 .nb-btn {
@@ -108,15 +86,13 @@ body {
   font-weight: 900;
   text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.1s;
 }
 
-.nb-btn:hover {
-  transform: translate(-4px, -4px);
-  box-shadow: 14px 14px 0px var(--nb-border);
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.nb-btn:active {
-  transform: translate(6px, 6px);
-  box-shadow: 0px 0px 0px var(--nb-border);
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
 }

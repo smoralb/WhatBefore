@@ -56,21 +56,22 @@ export default function Home({ onStart }) {
         <MemphisShape key={i} {...shape} />
       ))}
 
-      {/* Main Composition */}
-      <motion.div 
-        initial={{ scale: 0, rotate: -10 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", stiffness: 200, damping: 15 }}
-        className="burst-container w-[320px] h-[320px] md:w-[550px] md:h-[550px] mb-12"
+      {/* Big Comic Title */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.5 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5, type: "spring", stiffness: 150 }}
+        className="relative mb-12 z-20"
       >
-        <div className="burst-shadow" />
-        <div className="burst-main">
-          <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-center leading-none">
-            <span className="text-nb-pink">What</span><br />
-            <span className="text-nb-purple">Before</span><br />
-            <span className="text-nb-teal">!</span>
-          </h1>
-        </div>
+        <h1 className="font-bangers text-7xl md:text-9xl text-center tracking-wider" 
+            style={{ 
+              textShadow: '8px 8px 0 #000, -4px -4px 0 #000, 4px -4px 0 #000, -4px 4px 0 #000',
+              fontFamily: 'Bangers, cursive'
+            }}>
+          <span className="text-nb-pink">What</span>
+          <br/>
+          <span className="text-nb-purple">Before!</span>
+        </h1>
       </motion.div>
 
       {/* Action Area */}

@@ -1,0 +1,19 @@
+<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <rect width="20" height="20" fill="#FFF5F5"/>
+      <rect width="1" height="1" fill="#FFB6C1" opacity="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#grid)"/>
+  <polygon points="30,30 60,60 30,60" fill="#FF69B4" opacity="0.8"/>
+  <circle cx="350" cy="50" r="20" fill="#FFD700" opacity="0.8"/>
+  <rect x="320" y="220" width="30" height="30" fill="#98FB98" transform="rotate(15 335 235)"/>
+  <path d="M100,100 Q120,80 140,100 T180,100" stroke="#FF6B6B" stroke-width="3" fill="none"/>
+  <polygon points="50,200 80,250 20,250" fill="#87CEEB" opacity="0.8"/>
+  <circle cx="300" cy="150" r="15" fill="#DDA0DD" opacity="0.8"/>
+  <rect x="150" y="50" width="25" height="25" fill="#FFA07A" transform="rotate(45 162.5 62.5)"/>
+  <path d="M200,200 Q220,180 240,200 T280,200" stroke="#00CED1" stroke-width="3" fill="none"/>
+  <circle cx="80" cy="140" r="12" fill="#FFE4B5"/>
+  <rect x="250" y="80" width="20" height="20" fill="#FF69B4" transform="rotate(30 260 90)"/>
+</svg>

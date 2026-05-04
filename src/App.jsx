@@ -50,7 +50,7 @@ function App() {
           <Home key="home" onStart={handleStart} />
         )}
         {screen === "game" && (
-          <Game key="game" onGameOver={handleGameOver} onScore={handleScore} />
+          <Game key="game" onGameOver={handleGameOver} onScore={handleScore} onRound={handleRound} />
         )}
         {screen === "gameover" && (
           <GameOver

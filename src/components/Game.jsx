@@ -4,10 +4,11 @@ import { fetchEventPair, getEarlierEvent } from "../utils/wikiApi";
 
 const COLORS = ['bg-nb-pink', 'bg-nb-yellow', 'bg-nb-purple', 'bg-nb-teal'];
 
-export default function Game({ onGameOver, onScore }) {
+export default function Game({ onGameOver, onScore, onRound }) {
   const [events, setEvents] = useState([]);
   const [timeLeft, setTimeLeft] = useState(15);
   const [score, setScore] = useState(0);
+  const [round, setRound] = useState(1);
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,8 +62,10 @@ export default function Game({ onGameOver, onScore }) {
     if (isCorrect) {
       const points = 100 + (timeLeft * 10);
       setScore((prev) => prev + points);
+      setRound((prev) => prev + 1);
       setTimeout(() => {
         onScore(score + points);
+        onRound(round);
         loadNewPair();
       }, 1500);
     } else {

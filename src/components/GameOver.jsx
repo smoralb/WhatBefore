@@ -1,55 +1,116 @@
 import { motion } from "framer-motion";
 
 export default function GameOver({ score, round, onRestart, onLeaderboard, onHome }) {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.8 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: { type: "spring", stiffness: 300, damping: 20 }
+    }
+  };
+
+  const bounceVariants = {
+    hidden: { opacity: 0, scale: 0 },
+    visible: {
+      opacity: 1,
+      scale: 1,
+      transition: { type: "spring", stiffness: 400, damping: 10 }
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center gap-8"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex flex-col items-center gap-8 min-h-screen py-12 px-4"
     >
-      <div className="mem-shape-circle w-24 h-24 bg-[#FFD700] border-4 border-black absolute" style={{ top: '10%', left: '10%' }}></div>
-      <div className="mem-shape-star w-20 h-20 bg-[#FF69B4] border-4 border-black absolute" style={{ top: '15%', right: '15%' }}></div>
+      <motion.div
+        variants={bounceVariants}
+        className="w-24 h-24 bg-[#FFF44F] border-4 border-black absolute"
+        style={{ top: '8%', left: '10%', borderRadius: '50%' }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div
+        variants={bounceVariants}
+        className="w-20 h-20 bg-[#FF6AD5] border-4 border-black absolute"
+        style={{ top: '12%', right: '12%' }}
+        animate={{ rotate: -360, scale: [1, 1.1, 1] }}
+        transition={{ duration: 3, repeat: Infinity }}
+      />
 
       <motion.div
-        initial={{ y: -30 }}
-        animate={{ y: 0 }}
-        className="mem-card-coral brutal-border brutal-shadow p-8"
+        variants={itemVariants}
+        className="nb-card p-8 w-full max-w-md"
       >
-        <h2 className="text-3xl md:text-5xl font-black text-white text-center mem-title">
+        <h2 className="text-4xl md:text-6xl font-black text-center"
+            style={{ textShadow: '4px 4px 0 #000', color: '#FF6AD5' }}>
           GAME OVER
         </h2>
       </motion.div>
 
-      <div className="mem-display brutal-border brutal-shadow p-8 text-center">
+      <motion.div
+        variants={itemVariants}
+        className="nb-card p-8 text-center w-full max-w-md"
+      >
         <p className="text-black font-bold text-xl mb-2">FINAL SCORE</p>
-        <p className="text-[#FF69B4] font-black text-5xl md:text-7xl">{score}</p>
-      </div>
+        <motion.p
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
+          className="text-[#FF6AD5] font-black text-6xl md:text-8xl"
+        >
+          {score}
+        </motion.p>
+        <div className="mt-4 pt-4 border-t-4 border-black">
+          <p className="text-black font-bold text-lg">ROUNDS SURVIVED</p>
+          <p className="text-black font-black text-4xl">{round - 1}</p>
+        </div>
+      </motion.div>
 
-      <div className="mem-card-yellow brutal-border brutal-shadow p-6 text-center">
-        <p className="text-black font-bold text-lg">ROUNDS SURVIVED:</p>
-        <p className="text-black font-black text-4xl">{round - 1}</p>
-      </div>
-
-      <div className="flex flex-col gap-4 w-full max-w-xs">
-        <button
+      <motion.div variants={itemVariants} className="flex flex-col gap-4 w-full max-w-sm">
+        <motion.button
           onClick={onLeaderboard}
-          className="mem-btn text-black font-black text-lg py-4 px-8 cursor-pointer"
+          whileHover={{ scale: 1.05, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
+          className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+          style={{ backgroundColor: '#FFF44F' }}
         >
           LEADERBOARD
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={onRestart}
-          className="mem-btn-mint font-black text-lg py-4 px-8 cursor-pointer hover:rotate-1 transition-transform"
+          whileHover={{ scale: 1.05, rotate: -2 }}
+          whileTap={{ scale: 0.95 }}
+          className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+          style={{ backgroundColor: '#72EFDD' }}
         >
           PLAY AGAIN
-        </button>
-        <button
+        </motion.button>
+        <motion.button
           onClick={onHome}
-          className="mem-btn-sky font-black text-lg py-4 px-8 cursor-pointer hover:-rotate-1 transition-transform"
+          whileHover={{ scale: 1.05, rotate: 2 }}
+          whileTap={{ scale: 0.95 }}
+          className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+          style={{ backgroundColor: '#C77DFF' }}
         >
           MAIN MENU
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
     </motion.div>
   );
 }

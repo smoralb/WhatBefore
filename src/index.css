@@ -78,6 +78,13 @@ body {
   transition: transform 0.2s;
 }
 
+.nb-card-event {
+  background: white;
+  border: 4px solid var(--nb-border);
+  box-shadow: 4px 4px 0px var(--nb-border);
+  transition: transform 0.2s;
+}
+
 .nb-btn {
   background: var(--nb-yellow);
   border: 6px solid var(--nb-border);
@@ -95,4 +102,11 @@ body {
 
 .animate-spin-slow {
   animation: spin-slow 20s linear infinite;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

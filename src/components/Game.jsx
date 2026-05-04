@@ -1,8 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fetchEventPair, getEarlierEvent } from "../utils/wikiApi";
 
 const COLORS = ['bg-nb-pink', 'bg-nb-yellow', 'bg-nb-purple', 'bg-nb-teal'];
+
+function truncateTitle(title, maxLength = 80) {
+  if (title.length <= maxLength) return title;
+  return title.substring(0, maxLength).trim() + "...";
+}
 
 export default function Game({ onGameOver, onScore, onRound }) {
   const [events, setEvents] = useState([]);
@@ -13,30 +18,34 @@ export default function Game({ onGameOver, onScore, onRound }) {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [transitioning, setTransitioning] = useState(false);
-  const [cardColor, setCardColor] = useState(COLORS[0]);
+  
+  const roundRef = useRef(1);
+  const scoreRef = useRef(0);
+  const loadingRef = useRef(true);
 
   const loadNewPair = useCallback(async () => {
+    loadingRef.current = true;
     setLoading(true);
     setSelected(null);
     setResult(null);
     setTimeLeft(15);
-    setCardColor(COLORS[Math.floor(Math.random() * COLORS.length)]);
     
     try {
-      const pair = await fetchEventPair();
+      const pair = await fetchEventPair(roundRef.current);
       setEvents(pair);
     } catch (error) {
       console.error("Error loading events:", error);
     }
+    loadingRef.current = false;
     setLoading(false);
   }, []);
 
   useEffect(() => {
     loadNewPair();
-  }, [loadNewPair]);
+  }, []);
 
   useEffect(() => {
-    if (result !== null || loading || transitioning) return;
+    if (result !== null || loadingRef.current || transitioning) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -49,7 +58,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [result, loading, transitioning, events]);
+  }, [result, transitioning]);
 
   const handleAnswer = (selectedEvent) => {
     if (result !== null) return;
@@ -62,19 +71,21 @@ export default function Game({ onGameOver, onScore, onRound }) {
 
     if (isCorrect) {
       const points = 100 + (timeLeft * 10);
-      const newRound = round + 1;
+      const newRound = roundRef.current + 1;
       setScore((prev) => prev + points);
+      scoreRef.current += points;
       setRound(newRound);
+      roundRef.current = newRound;
       setTransitioning(true);
       setTimeout(() => {
-        onScore(prev => prev + points);
+        onScore(scoreRef.current);
         onRound(newRound);
         setTransitioning(false);
         loadNewPair();
       }, 1500);
     } else {
       setTimeout(() => {
-        onGameOver(score);
+        onGameOver(scoreRef.current);
       }, 2000);
     }
   };
@@ -82,15 +93,15 @@ export default function Game({ onGameOver, onScore, onRound }) {
   const progressPercent = (timeLeft / 15) * 100;
 
   return (
-    <div className="w-full min-h-screen bg-memphis-main p-4 md:p-8 flex flex-col items-center">
+    <div className="w-full min-h-screen bg-memphis-main p-2 md:p-8 flex flex-col items-center">
       
       {/* HUD de Juego */}
-      <div className="w-full max-w-5xl flex justify-between items-center mb-8 gap-4">
-        <div className="nb-card bg-white px-6 py-3 font-black text-2xl rotate-1">
+      <div className="w-full max-w-5xl flex justify-between items-center gap-4 mb-2 md:mb-8">
+        <div className="nb-card bg-white px-3 md:px-6 py-2 md:py-3 font-black text-sm md:text-2xl rotate-1">
           PUNTOS: {score} | RONDA: {round}
         </div>
         
-        <div className="flex-1 h-10 bg-white border-4 border-black relative overflow-hidden">
+        <div className="flex-1 h-8 md:h-10 bg-white border-4 border-black relative overflow-hidden">
           <motion.div 
             initial={{ width: "100%" }}
             animate={{ width: `${progressPercent}%` }}
@@ -98,7 +109,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
           />
         </div>
 
-        <div className={`nb-card px-6 py-3 font-black text-2xl -rotate-1 ${timeLeft <= 5 ? "bg-nb-pink" : "bg-nb-teal"}`}>
+        <div className={`nb-card px-3 md:px-6 py-2 md:py-3 font-black text-sm md:text-2xl -rotate-1 ${timeLeft <= 5 ? "bg-nb-pink" : "bg-nb-teal"}`}>
           {timeLeft}s
         </div>
       </div>
@@ -110,15 +121,15 @@ export default function Game({ onGameOver, onScore, onRound }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.2 }}
-            className="flex flex-col items-center justify-center mt-20"
+            className="flex flex-col items-center justify-center mt-8 md:mt-20"
           >
-            <div className="nb-card bg-nb-purple p-12 text-center rotate-3">
-              <h2 className="text-4xl font-black mb-4">CARGANDO...</h2>
-              <p className="font-bold">VIAJANDO EN EL TIEMPO</p>
+            <div className="nb-card bg-nb-purple p-8 md:p-12 text-center rotate-3">
+              <h2 className="text-3xl md:text-4xl font-black mb-2 md:mb-4">CARGANDO...</h2>
+              <p className="font-bold text-sm md:text-base">VIAJANDO EN EL TIEMPO</p>
             </div>
           </motion.div>
         ) : (
-          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-12 mt-4">
+          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-12 mt-1 md:mt-4">
             {events.map((event, index) => (
               <motion.button
                 key={event.title}
@@ -128,25 +139,25 @@ export default function Game({ onGameOver, onScore, onRound }) {
                 onClick={() => handleAnswer(event)}
                 disabled={result !== null}
                 className={`nb-card p-0 flex flex-col overflow-hidden text-left h-full
-                  ${selected === event.title && result === "correct" ? "ring-8 ring-nb-teal" : ""}
-                  ${selected === event.title && result === "wrong" ? "ring-8 ring-nb-pink" : ""}
+                  ${selected === event.title && result === "correct" ? "ring-4 md:ring-8 ring-nb-teal" : ""}
+                  ${selected === event.title && result === "wrong" ? "ring-4 md:ring-8 ring-nb-pink" : ""}
                 `}
               >
-                <div className="h-64 md:h-80 bg-gray-200 border-b-4 border-black relative">
+                <div className="h-40 md:h-64 lg:h-80 bg-gray-200 border-b-4 border-black relative">
                   <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
                   {selected === event.title && (
-                    <div className={`absolute inset-0 flex items-center justify-center bg-black/20 font-black text-6xl text-white`}>
+                    <div className={`absolute inset-0 flex items-center justify-center bg-black/20 font-black text-4xl md:text-6xl text-white`}>
                       {result === "correct" ? "✓" : "✗"}
                     </div>
                   )}
                 </div>
-                <div className={`p-6 flex-1 bg-white`}>
-                  <h3 className="text-2xl font-black leading-tight mb-2 uppercase">{event.title}</h3>
+                <div className={`p-3 md:p-6 flex-1 bg-white`}>
+                  <h3 className="text-lg md:text-2xl font-black leading-tight mb-2 uppercase line-clamp-3">{truncateTitle(event.title, 120)}</h3>
                   {result !== null && (
                     <motion.div 
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="mt-4 nb-card bg-nb-yellow p-3 text-center font-black text-2xl border-4"
+                      className="mt-2 md:mt-4 nb-card bg-nb-yellow p-2 md:p-3 text-center font-black text-lg md:text-2xl border-4"
                     >
                       AÑO: {event.year}
                     </motion.div>

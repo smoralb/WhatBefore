@@ -10,13 +10,16 @@ export default function Game({ onGameOver, onScore, onRound }) {
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [transitioning, setTransitioning] = useState(false);
   
   const roundRef = useRef(1);
   const scoreRef = useRef(0);
   const loadingRef = useRef(true);
+  const timerRef = useRef(null);
+  const isActiveRef = useRef(false);
 
   const loadNewPair = useCallback(async () => {
+    if (!isActiveRef.current) return;
+    
     loadingRef.current = true;
     setLoading(true);
     setSelected(null);
@@ -25,6 +28,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
     
     try {
       const pair = await fetchEventPair(roundRef.current);
+      if (!isActiveRef.current) return;
       setEvents(pair);
     } catch (error) {
       console.error("Error loading events:", error);
@@ -34,13 +38,21 @@ export default function Game({ onGameOver, onScore, onRound }) {
   }, []);
 
   useEffect(() => {
+    isActiveRef.current = true;
     loadNewPair();
+    
+    return () => {
+      isActiveRef.current = false;
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, []);
 
   useEffect(() => {
-    if (result !== null || loadingRef.current || transitioning) return;
+    if (result !== null || loading || !isActiveRef.current) return;
 
-    const timer = setInterval(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           handleAnswer(null);
@@ -50,17 +62,24 @@ export default function Game({ onGameOver, onScore, onRound }) {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [result, transitioning]);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [result, loading]);
 
   const handleAnswer = (selectedEvent) => {
-    if (result !== null) return;
+    if (result !== null || !isActiveRef.current) return;
 
     const earlierEvent = getEarlierEvent(events[0], events[1]);
     const isCorrect = selectedEvent && selectedEvent.title === earlierEvent.title;
 
     setSelected(selectedEvent?.title || null);
     setResult(isCorrect ? "correct" : "wrong");
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
     if (isCorrect) {
       const points = 100 + (timeLeft * 10);
@@ -69,11 +88,9 @@ export default function Game({ onGameOver, onScore, onRound }) {
       scoreRef.current += points;
       setRound(newRound);
       roundRef.current = newRound;
-      setTransitioning(true);
       setTimeout(() => {
         onScore(scoreRef.current);
         onRound(newRound);
-        setTransitioning(false);
         loadNewPair();
       }, 1500);
     } else {

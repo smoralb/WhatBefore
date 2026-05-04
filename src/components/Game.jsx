@@ -12,6 +12,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [transitioning, setTransitioning] = useState(false);
   const [cardColor, setCardColor] = useState(COLORS[0]);
 
   const loadNewPair = useCallback(async () => {
@@ -35,7 +36,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
   }, [loadNewPair]);
 
   useEffect(() => {
-    if (result !== null || loading) return;
+    if (result !== null || loading || transitioning) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -48,7 +49,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [result, loading, events]);
+  }, [result, loading, transitioning, events]);
 
   const handleAnswer = (selectedEvent) => {
     if (result !== null) return;
@@ -61,11 +62,14 @@ export default function Game({ onGameOver, onScore, onRound }) {
 
     if (isCorrect) {
       const points = 100 + (timeLeft * 10);
+      const newRound = round + 1;
       setScore((prev) => prev + points);
-      setRound((prev) => prev + 1);
+      setRound(newRound);
+      setTransitioning(true);
       setTimeout(() => {
-        onScore(score + points);
-        onRound(round);
+        onScore(prev => prev + points);
+        onRound(newRound);
+        setTransitioning(false);
         loadNewPair();
       }, 1500);
     } else {
@@ -83,7 +87,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
       {/* HUD de Juego */}
       <div className="w-full max-w-5xl flex justify-between items-center mb-8 gap-4">
         <div className="nb-card bg-white px-6 py-3 font-black text-2xl rotate-1">
-          PUNTOS: {score}
+          PUNTOS: {score} | RONDA: {round}
         </div>
         
         <div className="flex-1 h-10 bg-white border-4 border-black relative overflow-hidden">

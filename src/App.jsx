@@ -56,37 +56,36 @@ function App() {
 
   const handleSaveScore = async (username, newScore, isUpdate = false) => {
     try {
-      if (isUpdate && savedUsername) {
-        const getResponse = await fetch(
-          `${SUPABASE_URL}/rest/v1/scores?username=eq.${username}`,
-          {
-            headers: {
-              "apikey": SUPABASE_KEY,
-              "Authorization": `Bearer ${SUPABASE_KEY}`
-            }
-          }
-        );
-        
-        const existingScores = await getResponse.json();
-        
-        if (existingScores.length > 0) {
-          const currentHighScore = existingScores[0].score;
-          if (newScore > currentHighScore) {
-            await fetch(`${SUPABASE_URL}/rest/v1/scores?username=eq.${username}`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                "apikey": SUPABASE_KEY,
-                "Authorization": `Bearer ${SUPABASE_KEY}`,
-                "Prefer": "return=minimal"
-              },
-              body: JSON.stringify({
-                score: newScore,
-                rounds: round - 1
-              })
-            });
+      const encodedUsername = encodeURIComponent(username);
+      console.log("Saving score for:", username, "encoded:", encodedUsername);
+      
+      const getResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`,
+        {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`
           }
         }
+      );
+      
+      const existingScores = await getResponse.json();
+      console.log("Existing scores:", existingScores);
+      
+      if (existingScores.length > 0) {
+        await fetch(`${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            score: newScore,
+            rounds: round - 1
+          })
+        });
       } else {
         await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
           method: "POST",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import Home from "./components/Home";
 import Game from "./components/Game";
@@ -9,6 +9,14 @@ function App() {
   const [screen, setScreen] = useState("home");
   const [score, setScore] = useState(0);
   const [round, setRound] = useState(1);
+  const [savedUsername, setSavedUsername] = useState("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("whatbefore_username");
+    if (saved) {
+      setSavedUsername(saved);
+    }
+  }, []);
 
   const handleStart = () => {
     setScore(0);
@@ -46,28 +54,60 @@ function App() {
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 
-  const handleSaveScore = async (username, score) => {
+  const handleSaveScore = async (username, newScore, isUpdate = false) => {
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_KEY,
-          "Authorization": `Bearer ${SUPABASE_KEY}`,
-          "Prefer": "return=minimal"
-        },
-        body: JSON.stringify({
-          username: username,
-          score: score,
-          rounds: round - 1
-        })
-      });
-
-      if (response.ok) {
-        handleLeaderboard();
+      if (isUpdate && savedUsername) {
+        const getResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/scores?username=eq.${username}`,
+          {
+            headers: {
+              "apikey": SUPABASE_KEY,
+              "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+        
+        const existingScores = await getResponse.json();
+        
+        if (existingScores.length > 0) {
+          const currentHighScore = existingScores[0].score;
+          if (newScore > currentHighScore) {
+            await fetch(`${SUPABASE_URL}/rest/v1/scores?username=eq.${username}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`,
+                "Prefer": "return=minimal"
+              },
+              body: JSON.stringify({
+                score: newScore,
+                rounds: round - 1
+              })
+            });
+          }
+        }
       } else {
-        console.error("Error saving score:", response.statusText);
+        await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_KEY,
+            "Authorization": `Bearer ${SUPABASE_KEY}`,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            username: username,
+            score: newScore,
+            rounds: round - 1
+          })
+        });
+        
+        localStorage.setItem("whatbefore_username", username);
+        setSavedUsername(username);
       }
+
+      handleLeaderboard();
     } catch (error) {
       console.error("Error saving score:", error);
     }
@@ -91,6 +131,7 @@ function App() {
             onLeaderboard={handleLeaderboard}
             onHome={handleHome}
             onSaveScore={handleSaveScore}
+            savedUsername={savedUsername}
           />
         )}
         {screen === "leaderboard" && (

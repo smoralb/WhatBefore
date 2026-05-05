@@ -1,31 +1,39 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-export default function Leaderboard({ currentScore, onRestart, onHome }) {
+export default function Leaderboard({ onRestart, onHome }) {
   const [entries, setEntries] = useState([]);
-  const [isNewHighScore, setIsNewHighScore] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const SUPABASE_URL = "https://wbofcwuyhhguyripiueq.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_QKhDFg_CKcdVSVo4pgyhmg_cMWxove3";
 
   useEffect(() => {
-    const saved = localStorage.getItem("timelineDuelLeaderboard");
-    const parsed = saved ? JSON.parse(saved) : [];
-    
-    const newEntry = {
-      id: Date.now(),
-      score: currentScore,
-      date: new Date().toLocaleDateString(),
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/scores?select=*&order=score.desc&limit=20`,
+          {
+            headers: {
+              "apikey": SUPABASE_KEY,
+              "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setEntries(data);
+        }
+      } catch (error) {
+        console.error("Error fetching leaderboard:", error);
+      } finally {
+        setLoading(false);
+      }
     };
-    
-    const allEntries = [...parsed, newEntry];
-    const top10 = allEntries
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 10);
-    
-    const isTop = top10.find(e => e.id === newEntry.id);
-    setIsNewHighScore(!!isTop && top10[0].id === newEntry.id);
-    
-    localStorage.setItem("timelineDuelLeaderboard", JSON.stringify(top10));
-    setEntries(top10);
-  }, [currentScore]);
+
+    fetchLeaderboard();
+  }, []);
 
   const getRankClass = (index) => {
     if (index === 0) return "text-[#FFD700]";
@@ -60,43 +68,37 @@ export default function Leaderboard({ currentScore, onRestart, onHome }) {
         </h2>
       </motion.div>
 
-      {isNewHighScore && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1, rotate: 5 }}
-          className="mem-card-yellow brutal-border brutal-shadow p-4"
-        >
-          <span className="text-black font-black text-xl">NEW HIGH SCORE!</span>
-        </motion.div>
-      )}
-
       <div className="w-full mem-card brutal-border p-1">
         <div className="mem-card-pink brutal-border-b-0 p-2">
           <div className="bg-white brutal-border grid grid-cols-3 p-3 font-black text-sm md:text-base">
             <span className="text-black">RANK</span>
-            <span className="text-black text-center">SCORE</span>
-            <span className="text-black text-right">DATE</span>
+            <span className="text-black text-center">NAME</span>
+            <span className="text-black text-right">SCORE</span>
           </div>
         </div>
         
         <div className="mem-card-coral p-1">
-          {entries.map((entry, index) => (
-            <motion.div
-              key={entry.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white border-4 border-black grid grid-cols-3 p-3 font-bold text-sm md:text-base"
-            >
-              <span className={`${getRankClass(index)} text-lg`}>
-                {getRankIcon(index)}
-              </span>
-              <span className="text-[#FF69B4] text-center text-lg font-black">{entry.score}</span>
-              <span className="text-black text-right text-xs">{entry.date}</span>
-            </motion.div>
-          ))}
-          
-          {entries.length === 0 && (
+          {loading ? (
+            <div className="bg-white border-4 border-black p-6 text-center">
+              <span className="text-black font-bold">LOADING...</span>
+            </div>
+          ) : entries.length > 0 ? (
+            entries.map((entry, index) => (
+              <motion.div
+                key={entry.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white border-4 border-black grid grid-cols-3 p-3 font-bold text-sm md:text-base"
+              >
+                <span className={`${getRankClass(index)} text-lg`}>
+                  {getRankIcon(index)}
+                </span>
+                <span className="text-black text-center text-lg font-black truncate">{entry.username}</span>
+                <span className="text-[#FF69B4] text-right text-lg font-black">{entry.score}</span>
+              </motion.div>
+            ))
+          ) : (
             <div className="bg-white border-4 border-black p-6 text-center">
               <span className="text-black font-bold">NO SCORES YET</span>
             </div>

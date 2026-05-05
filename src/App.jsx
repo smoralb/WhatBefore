@@ -43,8 +43,8 @@ function App() {
     setRound(newRound);
   };
 
-  const SUPABASE_URL = "https://wbofcwuyhhguyripiueq.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_QKhDFg_CKcdVSVo4pgyhmg_cMWxove3";
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 
   const handleSaveScore = async (username, score) => {
     try {

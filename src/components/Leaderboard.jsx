@@ -5,8 +5,8 @@ export default function Leaderboard({ onRestart, onHome }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const SUPABASE_URL = "https://wbofcwuyhhguyripiueq.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_QKhDFg_CKcdVSVo4pgyhmg_cMWxove3";
+  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+  const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
 
   useEffect(() => {
     const fetchLeaderboard = async () => {

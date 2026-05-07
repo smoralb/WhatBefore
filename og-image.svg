@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#FFEako"/>
+  
+  <!-- Decorative shapes -->
+  <polygon points="100,80 150,30 200,80" fill="none" stroke="#000" stroke-width="8"/>
+  <circle cx="1100" cy="100" r="50" fill="#FF6AD5" stroke="#000" stroke-width="8"/>
+  <rect x="120" y="480" width="70" height="70" fill="#72EFDD" stroke="#000" stroke-width="6" transform="rotate(15 155 515)"/>
+  <rect x="1000" y="480" width="70" height="70" fill="#C77DFF" stroke="#000" stroke-width="6" transform="rotate(-10 1035 515)"/>
+  
+  <!-- Main Title -->
+  <text x="600" y="180" font-family="Impact, Arial Black, sans-serif" font-size="160" text-anchor="middle" fill="#FF6AD5" stroke="#000" stroke-width="3">What</text>
+  <text x="600" y="310" font-family="Impact, Arial Black, sans-serif" font-size="160" text-anchor="middle" fill="#C77DFF" stroke="#000" stroke-width="3">Before!</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="380" font-family="Arial, sans-serif" font-size="32" text-anchor="middle" font-weight="bold" fill="#333">¿Qué evento fue primero?</text>
+  
+  <!-- VS indicator -->
+  <text x="600" y="480" font-family="Arial Black, sans-serif" font-size="48" text-anchor="middle" fill="#000" stroke="#FFF" stroke-width="2">?</text>
+  
+  <!-- Bottom info -->
+  <text x="600" y="550" font-family="Arial, sans-serif" font-size="24" text-anchor="middle" fill="#555">Juega y aprende historia</text>
+  
+  <!-- Memphis dots -->
+  <circle cx="200" cy="200" r="12" fill="#98FB98" stroke="#000" stroke-width="3"/>
+  <circle cx="1000" cy="250" r="16" fill="#FFF44F" stroke="#000" stroke-width="3"/>
+  <circle cx="250" cy="400" r="10" fill="#72EFDD" stroke="#000" stroke-width="3"/>
+  <circle cx="950" cy="400" r="14" fill="#FF6AD5" stroke="#000" stroke-width="3"/>
+</svg>

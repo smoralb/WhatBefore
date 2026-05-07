@@ -30,6 +30,16 @@ body {
   overflow-x: hidden;
 }
 
+@media (max-width: 768px) {
+  html, body {
+    overflow: hidden;
+    height: 100%;
+    position: fixed;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 .bg-memphis-main {
   background-color: #0047AB;
   background-image: 

@@ -7,10 +7,15 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
   const [saving, setSaving] = useState(false);
   const [autoSaved, setAutoSaved] = useState(false);
 
+  const userHasUsername = savedUsername && savedUsername.trim() !== "";
+
   useEffect(() => {
-    if (savedUsername && userExistsInSupabase && score > 0 && !autoSaved) {
+    if (userHasUsername && userExistsInSupabase && score > 0 && !autoSaved) {
       setAutoSaved(true);
       onSaveScore(savedUsername, score, true);
+    }
+    if (!userHasUsername) {
+      setShowSavePrompt(true);
     }
   }, [savedUsername, userExistsInSupabase, score]);
 
@@ -39,6 +44,8 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
     if (!username.trim()) return;
     setSaving(true);
     await onSaveScore(username.trim(), score, true);
+    setAutoSaved(true);
+    setShowSavePrompt(false);
     setSaving(false);
   };
 
@@ -79,73 +86,67 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
           </div>
         </motion.div>
 
-        {!showSavePrompt ? (
-          <motion.div variants={itemVariants} className="flex flex-col gap-4 w-full max-w-sm">
-            <motion.button
-              onClick={onLeaderboard}
-              whileHover={{ scale: 1.05, rotate: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
-              style={{ backgroundColor: '#98FB98' }}
-            >
-              LEADERBOARD
-            </motion.button>
-            <motion.button
-              onClick={onRestart}
-              whileHover={{ scale: 1.05, rotate: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
-              style={{ backgroundColor: '#72EFDD' }}
-            >
-              PLAY AGAIN
-            </motion.button>
-            <motion.button
-              onClick={onHome}
-              whileHover={{ scale: 1.05, rotate: 2 }}
-              whileTap={{ scale: 0.95 }}
-              className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
-              style={{ backgroundColor: '#C77DFF' }}
-            >
-              MAIN MENU
-            </motion.button>
-          </motion.div>
-        ) : (
-          <motion.div variants={itemVariants} className="flex flex-col gap-4 w-full max-w-sm">
-            <div className="nb-card p-4">
-              <label className="text-black font-black text-lg block mb-2">YOUR NAME</label>
+        {!userHasUsername && showSavePrompt && (
+          <motion.div variants={itemVariants} className="nb-card p-6 w-full max-w-md">
+            <p className="text-black font-black text-xl mb-4 text-center">SAVE YOUR SCORE</p>
+            <div className="flex flex-col gap-3">
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your name"
+                placeholder="Your name"
                 maxLength={20}
                 className="w-full p-3 border-4 border-black font-black text-lg"
               />
+              <motion.button
+                onClick={handleSave}
+                disabled={!username.trim() || saving}
+                whileHover={username.trim() ? { scale: 1.05, rotate: 2 } : {}}
+                whileTap={username.trim() ? { scale: 0.95 } : {}}
+                className={`nb-btn text-black font-black text-lg py-4 px-6 cursor-pointer text-center ${!username.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                style={{ backgroundColor: '#FFF44F' }}
+              >
+                {saving ? "SAVING..." : "SAVE SCORE"}
+              </motion.button>
             </div>
-            <motion.button
-              onClick={handleSave}
-              disabled={!username.trim() || saving}
-              whileHover={username.trim() ? { scale: 1.05, rotate: 2 } : {}}
-              whileTap={username.trim() ? { scale: 0.95 } : {}}
-              className={`nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center ${!username.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
-              style={{ backgroundColor: '#FFF44F' }}
-            >
-              {saving ? "SAVING..." : "SAVE"}
-            </motion.button>
-            <motion.button
-              onClick={() => {
-                setShowSavePrompt(false);
-                setUsername("");
-              }}
-              whileHover={{ scale: 1.05, rotate: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
-              style={{ backgroundColor: '#FF6B6B' }}
-            >
-              CANCEL
-            </motion.button>
           </motion.div>
         )}
+
+        {autoSaved && (
+          <motion.div variants={itemVariants} className="nb-card p-4 w-full max-w-md">
+            <p className="text-black font-black text-xl text-center text-green-600">SCORE SAVED!</p>
+          </motion.div>
+        )}
+
+        <motion.div variants={itemVariants} className="flex flex-col gap-4 w-full max-w-sm">
+          <motion.button
+            onClick={onLeaderboard}
+            whileHover={{ scale: 1.05, rotate: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+            style={{ backgroundColor: '#98FB98' }}
+          >
+            LEADERBOARD
+          </motion.button>
+          <motion.button
+            onClick={onRestart}
+            whileHover={{ scale: 1.05, rotate: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+            style={{ backgroundColor: '#72EFDD' }}
+          >
+            PLAY AGAIN
+          </motion.button>
+          <motion.button
+            onClick={onHome}
+            whileHover={{ scale: 1.05, rotate: 2 }}
+            whileTap={{ scale: 0.95 }}
+            className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+            style={{ backgroundColor: '#C77DFF' }}
+          >
+            MAIN MENU
+          </motion.button>
+        </motion.div>
       </motion.div>
     </div>
   );

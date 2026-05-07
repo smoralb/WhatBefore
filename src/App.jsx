@@ -134,8 +134,6 @@ function App() {
         setSavedUsername(username);
         setUserExistsInSupabase(true);
       }
-
-      handleLeaderboard();
     } catch (error) {
       console.error("Error saving score:", error);
     }

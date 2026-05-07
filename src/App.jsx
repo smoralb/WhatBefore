@@ -164,7 +164,7 @@ function App() {
           />
         )}
         {screen === "leaderboard" && (
-          <Leaderboard key="leaderboard" onRestart={handleRestart} onHome={handleHome} />
+          <Leaderboard key="leaderboard" savedUsername={savedUsername} onRestart={handleRestart} onHome={handleHome} />
         )}
       </AnimatePresence>
     </div>

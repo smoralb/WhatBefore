@@ -24,7 +24,7 @@ const MemphisShape = ({ type, color, top, left, delay, rotate, size = "" }) => {
   );
 };
 
-export default function Home({ onStart }) {
+export default function Home({ onStart, onLeaderboard }) {
   const shapes = [
     // Formas originales
     { type: "nb-zigzag", top: "10%", left: "5%", rotate: 15, delay: 0 },
@@ -104,6 +104,19 @@ export default function Home({ onStart }) {
                  backgroundPosition: '0 0, 8px 8px' 
                }} />
           <span className="relative z-10">Jugar ahora</span>
+        </motion.button>
+
+        <motion.button
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          whileHover={{ scale: 1.1, rotate: 2 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={onLeaderboard}
+          className="nb-btn text-2xl md:text-4xl"
+          style={{ backgroundColor: '#98FB98' }}
+        >
+          Leaderboard
         </motion.button>
       </div>
       

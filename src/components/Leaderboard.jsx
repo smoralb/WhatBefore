@@ -10,6 +10,11 @@ export default function Leaderboard({ onRestart, onHome }) {
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      if (!SUPABASE_URL || !SUPABASE_KEY) {
+        setLoading(false);
+        return;
+      }
+      
       try {
         const response = await fetch(
           `${SUPABASE_URL}/rest/v1/scores?select=*&order=score.desc&limit=20`,

@@ -1,10 +1,18 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-export default function GameOver({ score, round, onRestart, onLeaderboard, onHome, onSaveScore, savedUsername }) {
+export default function GameOver({ score, round, onRestart, onLeaderboard, onHome, onSaveScore, savedUsername, userExistsInSupabase }) {
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [username, setUsername] = useState(savedUsername || "");
   const [saving, setSaving] = useState(false);
+  const [autoSaved, setAutoSaved] = useState(false);
+
+  useEffect(() => {
+    if (savedUsername && userExistsInSupabase && score > 0 && !autoSaved) {
+      setAutoSaved(true);
+      onSaveScore(savedUsername, score, true);
+    }
+  }, [savedUsername, userExistsInSupabase, score]);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -73,28 +81,6 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
 
         {!showSavePrompt ? (
           <motion.div variants={itemVariants} className="flex flex-col gap-4 w-full max-w-sm">
-            {savedUsername ? (
-              <motion.button
-                onClick={handleSave}
-                disabled={saving}
-                whileHover={{ scale: 1.05, rotate: 2 }}
-                whileTap={{ scale: 0.95 }}
-                className={`nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
-                style={{ backgroundColor: '#FFF44F' }}
-              >
-                {saving ? "SAVING..." : `SAVE (${savedUsername})`}
-              </motion.button>
-            ) : (
-              <motion.button
-                onClick={() => setShowSavePrompt(true)}
-                whileHover={{ scale: 1.05, rotate: 2 }}
-                whileTap={{ scale: 0.95 }}
-                className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
-                style={{ backgroundColor: '#FFF44F' }}
-              >
-                SAVE SCORE
-              </motion.button>
-            )}
             <motion.button
               onClick={onLeaderboard}
               whileHover={{ scale: 1.05, rotate: -2 }}

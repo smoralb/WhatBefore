@@ -7,6 +7,20 @@ export default function Leaderboard({ onRestart, onHome, savedUsername }) {
 
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+  const REQUEST_TIMEOUT = 8000;
+
+  const fetchWithTimeout = async (url, options = {}) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+      return response;
+    } catch (error) {
+      clearTimeout(timeout);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -16,7 +30,7 @@ export default function Leaderboard({ onRestart, onHome, savedUsername }) {
       }
       
       try {
-        const response = await fetch(
+        const response = await fetchWithTimeout(
           `${SUPABASE_URL}/rest/v1/scores?select=*&order=score.desc&limit=50`,
           {
             headers: {
@@ -31,7 +45,9 @@ export default function Leaderboard({ onRestart, onHome, savedUsername }) {
           setEntries(data);
         }
       } catch (error) {
-        console.error("Error fetching leaderboard:", error);
+        if (error.name !== 'AbortError') {
+          console.error("Error fetching leaderboard:", error);
+        }
       } finally {
         setLoading(false);
       }

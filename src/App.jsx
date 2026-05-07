@@ -14,6 +14,20 @@ function App() {
 
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_KEY;
+  const REQUEST_TIMEOUT = 8000;
+
+  const fetchWithTimeout = async (url, options = {}) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+    try {
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+      return response;
+    } catch (error) {
+      clearTimeout(timeout);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem("whatbefore_username");
@@ -28,7 +42,7 @@ function App() {
     
     try {
       const encodedUsername = encodeURIComponent(username);
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         `${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`,
         {
           headers: {
@@ -40,7 +54,9 @@ function App() {
       const data = await response.json();
       setUserExistsInSupabase(data.length > 0);
     } catch (error) {
-      console.error("Error checking user:", error);
+      if (error.name !== 'AbortError') {
+        console.error("Error checking user:", error);
+      }
     }
   };
 
@@ -85,9 +101,8 @@ function App() {
     
     try {
       const encodedUsername = encodeURIComponent(username);
-      console.log("Saving score for:", username, "encoded:", encodedUsername);
       
-      const getResponse = await fetch(
+      const getResponse = await fetchWithTimeout(
         `${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`,
         {
           headers: {
@@ -98,10 +113,9 @@ function App() {
       );
       
       const existingScores = await getResponse.json();
-      console.log("Existing scores:", existingScores);
       
       if (existingScores.length > 0) {
-        await fetch(`${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`, {
+        await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -115,7 +129,7 @@ function App() {
           })
         });
       } else {
-        await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
+        await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/scores`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -135,7 +149,9 @@ function App() {
         setUserExistsInSupabase(true);
       }
     } catch (error) {
-      console.error("Error saving score:", error);
+      if (error.name !== 'AbortError') {
+        console.error("Error saving score:", error);
+      }
     }
   };
 

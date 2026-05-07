@@ -102,8 +102,8 @@ export default function Game({ onGameOver, onScore, onRound }) {
 
   const progressPercent = (timeLeft / 15) * 100;
 
-  return (
-    <div className="w-full min-h-screen bg-memphis-main p-2 md:p-8 flex flex-col items-center">
+return (
+    <div className="w-full bg-memphis-main p-2 md:p-8 flex flex-col items-center">
       
       {/* HUD de Juego */}
       <div className="w-full max-w-5xl flex justify-between items-center gap-2 md:gap-4 mb-2 md:mb-8">

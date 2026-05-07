@@ -32,7 +32,6 @@ body {
 
 @media (max-width: 768px) {
   html, body {
-    overflow: hidden;
     touch-action: pan-y pinch-zoom;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
@@ -40,6 +39,11 @@ body {
   
   body, .bg-memphis-main {
     min-height: 100dvh;
+  }
+  
+  .mobile-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 }
 

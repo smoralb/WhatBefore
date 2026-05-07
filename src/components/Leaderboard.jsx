@@ -70,7 +70,7 @@ export default function Leaderboard({ onRestart, onHome, savedUsername }) {
   const neighbors = getNeighbors();
 
   return (
-    <div className="w-full min-h-screen bg-memphis-main p-4 md:p-8 flex flex-col items-center justify-center">
+    <div className="w-full min-h-screen bg-memphis-main p-4 md:p-8 flex flex-col items-center justify-center mobile-scroll">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

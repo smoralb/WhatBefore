@@ -50,7 +50,7 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
   };
 
   return (
-    <div className="w-full min-h-screen bg-memphis-main p-4 md:p-8 flex flex-col items-center">
+    <div className="w-full min-h-screen bg-memphis-main p-4 md:p-8 flex flex-col items-center mobile-scroll">
       <motion.div
         variants={containerVariants}
         initial="hidden"

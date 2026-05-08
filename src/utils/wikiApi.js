@@ -87,6 +87,11 @@ export async function fetchEventPair(round = 1) {
   ];
 }
 
+export async function fetchEventPairs(round = 1, count = 1) {
+  const promises = Array.from({ length: count }, (_, i) => fetchEventPair(round + i));
+  return Promise.all(promises);
+}
+
 export function getEarlierEvent(event1, event2) {
   return event1.year <= event2.year ? event1 : event2;
 }

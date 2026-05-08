@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fetchEventPair, getEarlierEvent } from "../utils/wikiApi";
+import { fetchEventPair, fetchEventPairs, getEarlierEvent } from "../utils/wikiApi";
 
 export default function Game({ onGameOver, onScore, onRound }) {
   const [events, setEvents] = useState([]);
@@ -16,9 +16,39 @@ export default function Game({ onGameOver, onScore, onRound }) {
   const loadingRef = useRef(true);
   const timerRef = useRef(null);
   const isActiveRef = useRef(false);
+  const questionQueueRef = useRef([]);
+  const queueStartRoundRef = useRef(1);
+
+  const prefetchQuestions = useCallback(async () => {
+    if (!isActiveRef.current) return;
+    try {
+      const pairs = await fetchEventPairs(queueStartRoundRef.current, 5);
+      if (isActiveRef.current) {
+        questionQueueRef.current = [...questionQueueRef.current, ...pairs];
+      }
+    } catch (error) {
+      console.error("Error prefetching questions:", error);
+    }
+  }, []);
 
   const loadNewPair = useCallback(async () => {
     if (!isActiveRef.current) return;
+    
+    if (questionQueueRef.current.length > 0) {
+      const nextPair = questionQueueRef.current.shift();
+      loadingRef.current = false;
+      setEvents(nextPair);
+      setLoading(false);
+      setSelected(null);
+      setResult(null);
+      setTimeLeft(15);
+      
+      if (questionQueueRef.current.length <= 2) {
+        queueStartRoundRef.current += 5;
+        prefetchQuestions();
+      }
+      return;
+    }
     
     loadingRef.current = true;
     setLoading(true);
@@ -35,37 +65,22 @@ export default function Game({ onGameOver, onScore, onRound }) {
     }
     loadingRef.current = false;
     setLoading(false);
-  }, []);
+  }, [prefetchQuestions]);
 
   useEffect(() => {
     isActiveRef.current = true;
-    loadNewPair();
+    
+    const initializeGame = async () => {
+      await prefetchQuestions();
+      loadNewPair();
+    };
+    initializeGame();
     
     return () => {
       isActiveRef.current = false;
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []);
-
-  useEffect(() => {
-    if (result !== null || loading || !isActiveRef.current) return;
-
-    if (timerRef.current) clearInterval(timerRef.current);
-    
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleAnswer(null);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [result, loading]);
+  }, [prefetchQuestions, loadNewPair]);
 
   const handleAnswer = (selectedEvent) => {
     if (result !== null || !isActiveRef.current) return;
@@ -101,6 +116,26 @@ export default function Game({ onGameOver, onScore, onRound }) {
   };
 
   const progressPercent = (timeLeft / 15) * 100;
+
+  useEffect(() => {
+    if (result !== null || loading || !isActiveRef.current) return;
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          handleAnswer(null);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [result, loading, handleAnswer]);
 
 return (
     <div className="w-full bg-memphis-main p-2 md:p-8 flex flex-col items-center">

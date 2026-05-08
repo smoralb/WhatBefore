@@ -115,19 +115,22 @@ function App() {
       const existingScores = await getResponse.json();
       
       if (existingScores.length > 0) {
-        await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": SUPABASE_KEY,
-            "Authorization": `Bearer ${SUPABASE_KEY}`,
-            "Prefer": "return=minimal"
-          },
-          body: JSON.stringify({
-            score: newScore,
-            rounds: round - 1
-          })
-        });
+        const existingScore = existingScores[0].score;
+        if (newScore > existingScore) {
+          await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": SUPABASE_KEY,
+              "Authorization": `Bearer ${SUPABASE_KEY}`,
+              "Prefer": "return=minimal"
+            },
+            body: JSON.stringify({
+              score: newScore,
+              rounds: round - 1
+            })
+          });
+        }
       } else {
         await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/scores`, {
           method: "POST",

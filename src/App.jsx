@@ -32,8 +32,10 @@ function App() {
   useEffect(() => {
     const saved = localStorage.getItem("whatbefore_username");
     if (saved) {
-      setSavedUsername(saved);
-      checkUserExists(saved);
+      const savedLower = saved.toLowerCase().trim();
+      localStorage.setItem("whatbefore_username", savedLower);
+      setSavedUsername(savedLower);
+      checkUserExists(savedLower);
     }
   }, []);
 
@@ -41,7 +43,8 @@ function App() {
     if (!SUPABASE_URL || !SUPABASE_KEY) return;
     
     try {
-      const encodedUsername = encodeURIComponent(username);
+      const usernameLower = username.toLowerCase().trim();
+      const encodedUsername = encodeURIComponent(usernameLower);
       const response = await fetchWithTimeout(
         `${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`,
         {
@@ -100,7 +103,9 @@ function App() {
     }
     
     try {
-      const encodedUsername = encodeURIComponent(username);
+      const usernameLower = username.toLowerCase().trim();
+      const encodedUsername = encodeURIComponent(usernameLower);
+      console.log("Saving score:", { username: usernameLower, newScore });
       
       const getResponse = await fetchWithTimeout(
         `${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`,
@@ -116,6 +121,7 @@ function App() {
       
       if (existingScores.length > 0) {
         const existingScore = existingScores[0].score;
+        console.log("Score comparison:", { username: usernameLower, newScore, existingScore, willUpdate: newScore > existingScore });
         if (newScore > existingScore) {
           await fetchWithTimeout(`${SUPABASE_URL}/rest/v1/scores?username=eq.${encodedUsername}`, {
             method: "PATCH",
@@ -141,14 +147,14 @@ function App() {
             "Prefer": "return=minimal"
           },
           body: JSON.stringify({
-            username: username,
+            username: usernameLower,
             score: newScore,
             rounds: round - 1
           })
         });
         
-        localStorage.setItem("whatbefore_username", username);
-        setSavedUsername(username);
+        localStorage.setItem("whatbefore_username", usernameLower);
+        setSavedUsername(usernameLower);
         setUserExistsInSupabase(true);
       }
     } catch (error) {
@@ -169,7 +175,7 @@ function App() {
         )}
         {screen === "gameover" && (
           <GameOver
-            key="gameover"
+            key={`gameover-${score}-${round}`}
             score={score}
             round={round}
             onRestart={handleRestart}

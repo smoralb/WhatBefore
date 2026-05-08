@@ -22,7 +22,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
   const prefetchQuestions = useCallback(async () => {
     if (!isActiveRef.current) return;
     try {
-      const pairs = await fetchEventPairs(queueStartRoundRef.current, 5);
+      const pairs = await fetchEventPairs(queueStartRoundRef.current, 10);
       if (isActiveRef.current) {
         questionQueueRef.current = [...questionQueueRef.current, ...pairs];
       }
@@ -43,8 +43,8 @@ export default function Game({ onGameOver, onScore, onRound }) {
       setResult(null);
       setTimeLeft(15);
       
-      if (questionQueueRef.current.length <= 2) {
-        queueStartRoundRef.current += 5;
+      if (questionQueueRef.current.length <= 3) {
+        queueStartRoundRef.current += 10;
         prefetchQuestions();
       }
       return;

@@ -2,11 +2,13 @@
  * Motor de eventos infinitos usando la API de Wikipedia (Curated Featured Content)
  */
 
+const eventCache = new Map();
+
 export async function fetchEventPair(round = 1) {
   const maxDiff = Math.max(5, 80 - ((round - 1) * 3));
+  const maxAttempts = 5;
 
   let attempts = 0;
-  const maxAttempts = 10;
 
   while (attempts < maxAttempts) {
     try {
@@ -16,18 +18,25 @@ export async function fetchEventPair(round = 1) {
 
       const mm = month.toString().padStart(2, '0');
       const dd = day.toString().padStart(2, '0');
+      const cacheKey = `${mm}/${dd}`;
 
-      const response = await fetch(
-        `https://es.wikipedia.org/api/rest_v1/feed/onthisday/events/${mm}/${dd}`
-      );
-      const data = await response.json();
+      let eventsData;
+      if (eventCache.has(cacheKey)) {
+        eventsData = eventCache.get(cacheKey);
+      } else {
+        const response = await fetch(
+          `https://es.wikipedia.org/api/rest_v1/feed/onthisday/events/${mm}/${dd}`
+        );
+        eventsData = await response.json();
+        eventCache.set(cacheKey, eventsData);
+      }
 
-      if (!data.events || data.events.length < 2) {
+      if (!eventsData.events || eventsData.events.length < 2) {
         attempts++;
         continue;
       }
 
-      const validEvents = data.events
+      const validEvents = eventsData.events
         .filter(event => event.pages && event.pages[0].thumbnail)
         .map(event => ({
           title: event.text,
@@ -88,7 +97,10 @@ export async function fetchEventPair(round = 1) {
 }
 
 export async function fetchEventPairs(round = 1, count = 1) {
-  const promises = Array.from({ length: count }, (_, i) => fetchEventPair(round + i));
+  const promises = [];
+  for (let i = 0; i < count; i++) {
+    promises.push(fetchEventPair(round + i));
+  }
   return Promise.all(promises);
 }
 

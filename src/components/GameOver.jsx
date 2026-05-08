@@ -10,7 +10,7 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
   const userHasUsername = savedUsername && savedUsername.trim() !== "";
 
   useEffect(() => {
-    if (userHasUsername && userExistsInSupabase && score > 0 && !autoSaved) {
+    if (userHasUsername && userExistsInSupabase !== false && score > 0 && !autoSaved) {
       setAutoSaved(true);
       onSaveScore(savedUsername, score, true);
     }

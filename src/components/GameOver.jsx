@@ -50,60 +50,59 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
   };
 
   return (
-    <div className="w-full min-h-screen bg-memphis-main p-4 md:p-8 flex flex-col items-center mobile-scroll">
+    <div className="w-full min-h-screen bg-memphis-main px-3 py-2 md:p-8 flex flex-col items-center justify-center">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col items-center gap-8 py-12 px-4"
+        className="flex flex-col items-center gap-2 sm:gap-3 md:gap-6 w-full max-w-md"
       >
-        <motion.div
-          variants={itemVariants}
-          className="nb-card p-8 w-full max-w-md"
-        >
-          <h2 className="text-4xl md:text-6xl font-black text-center"
-              style={{ textShadow: '4px 4px 0 #000', color: '#FF6AD5' }}>
+        <motion.div variants={itemVariants} className="w-full">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-center leading-tight nb-card p-2 sm:p-3 md:p-6"
+              style={{ textShadow: '3px 3px 0 #000', color: '#FF6AD5' }}>
             GAME OVER
           </h2>
         </motion.div>
 
         <motion.div
           variants={itemVariants}
-          className="nb-card p-8 text-center w-full max-w-md"
+          className="nb-card p-3 sm:p-4 md:p-6 text-center w-full"
         >
-          <p className="text-black font-bold text-xl mb-2">FINAL SCORE</p>
+          <p className="text-black font-bold text-sm md:text-lg mb-0.5">FINAL SCORE</p>
           <motion.p
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.5, type: "spring", stiffness: 300 }}
-            className="text-[#FF6AD5] font-black text-6xl md:text-8xl"
+            className="text-[#FF6AD5] font-black text-4xl sm:text-5xl md:text-7xl leading-none break-all"
           >
             {score}
           </motion.p>
-          <div className="mt-4 pt-4 border-t-4 border-black">
-            <p className="text-black font-bold text-lg">ROUNDS SURVIVED</p>
-            <p className="text-black font-black text-4xl">{round - 1}</p>
+          <div className="mt-2 pt-2 border-t-2 md:border-t-4 border-black flex justify-center gap-6">
+            <div>
+              <p className="text-black font-bold text-xs md:text-base">ROUNDS</p>
+              <p className="text-black font-black text-2xl md:text-3xl">{round - 1}</p>
+            </div>
           </div>
         </motion.div>
 
         {!userHasUsername && showSavePrompt && (
-          <motion.div variants={itemVariants} className="nb-card p-6 w-full max-w-md">
-            <p className="text-black font-black text-xl mb-4 text-center">SAVE YOUR SCORE</p>
-            <div className="flex flex-col gap-3">
+          <motion.div variants={itemVariants} className="nb-card p-3 md:p-5 w-full">
+            <p className="text-black font-black text-sm md:text-lg mb-2 text-center">SAVE YOUR SCORE</p>
+            <div className="flex flex-col gap-2">
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Your name"
                 maxLength={20}
-                className="w-full p-3 border-4 border-black font-black text-lg"
+                className="w-full p-2 border-3 border-black font-black text-sm md:text-base"
               />
               <motion.button
                 onClick={handleSave}
                 disabled={!username.trim() || saving}
-                whileHover={username.trim() ? { scale: 1.05, rotate: 2 } : {}}
-                whileTap={username.trim() ? { scale: 0.95 } : {}}
-                className={`nb-btn text-black font-black text-lg py-4 px-6 cursor-pointer text-center ${!username.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
+                whileHover={username.trim() ? { scale: 1.04, rotate: 2 } : {}}
+                whileTap={username.trim() ? { scale: 0.96 } : {}}
+                className={`nb-btn text-black font-black text-sm md:text-base py-2 px-6 cursor-pointer text-center ${!username.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
                 style={{ backgroundColor: '#FFF44F' }}
               >
                 {saving ? "SAVING..." : "SAVE SCORE"}
@@ -113,35 +112,35 @@ export default function GameOver({ score, round, onRestart, onLeaderboard, onHom
         )}
 
         {autoSaved && (
-          <motion.div variants={itemVariants} className="nb-card p-4 w-full max-w-md">
-            <p className="text-black font-black text-xl text-center text-green-600">SCORE SAVED!</p>
+          <motion.div variants={itemVariants} className="nb-card p-2 md:p-3 w-full">
+            <p className="text-black font-black text-sm md:text-lg text-center text-green-600">SCORE SAVED!</p>
           </motion.div>
         )}
 
-        <motion.div variants={itemVariants} className="flex flex-col gap-4 w-full max-w-sm">
+        <motion.div variants={itemVariants} className="flex flex-col gap-2 md:gap-3 w-full">
           <motion.button
             onClick={onLeaderboard}
-            whileHover={{ scale: 1.05, rotate: -2 }}
-            whileTap={{ scale: 0.95 }}
-            className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+            whileHover={{ scale: 1.04, rotate: -2 }}
+            whileTap={{ scale: 0.96 }}
+            className="nb-btn text-black font-black text-sm md:text-xl py-2.5 md:py-4 px-6 md:px-8 cursor-pointer text-center"
             style={{ backgroundColor: '#98FB98' }}
           >
             LEADERBOARD
           </motion.button>
           <motion.button
             onClick={onRestart}
-            whileHover={{ scale: 1.05, rotate: -2 }}
-            whileTap={{ scale: 0.95 }}
-            className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+            whileHover={{ scale: 1.04, rotate: -2 }}
+            whileTap={{ scale: 0.96 }}
+            className="nb-btn text-black font-black text-sm md:text-xl py-2.5 md:py-4 px-6 md:px-8 cursor-pointer text-center"
             style={{ backgroundColor: '#72EFDD' }}
           >
             PLAY AGAIN
           </motion.button>
           <motion.button
             onClick={onHome}
-            whileHover={{ scale: 1.05, rotate: 2 }}
-            whileTap={{ scale: 0.95 }}
-            className="nb-btn text-black font-black text-xl py-5 px-8 cursor-pointer text-center"
+            whileHover={{ scale: 1.04, rotate: 2 }}
+            whileTap={{ scale: 0.96 }}
+            className="nb-btn text-black font-black text-sm md:text-xl py-2.5 md:py-4 px-6 md:px-8 cursor-pointer text-center"
             style={{ backgroundColor: '#C77DFF' }}
           >
             MAIN MENU

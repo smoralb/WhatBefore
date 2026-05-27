@@ -170,20 +170,21 @@ export default function Game({ onGameOver, onScore, onRound, onHome }) {
     <div className="w-full bg-memphis-main p-2 md:p-8 flex flex-col items-center">
 
       {/* HUD de Juego */}
-      <div className="w-full max-w-5xl flex justify-between items-center gap-2 md:gap-4 mb-2 md:mb-8">
-        <div className="nb-card bg-white px-2 md:px-6 py-1 md:py-3 font-black text-xs md:text-2xl rotate-1">
-          PUNTOS: {score} | RONDA: {round}
+      <div className="w-full max-w-5xl flex items-center gap-2 md:gap-4 mb-3 md:mb-8">
+        <div className="nb-card bg-white px-2 md:px-5 py-1.5 md:py-3 font-black text-[10px] sm:text-xs md:text-xl rotate-1 flex-shrink-0 flex flex-col md:flex-row md:gap-3 leading-tight">
+          <span className="whitespace-nowrap">PTS: {score}</span>
+          <span className="whitespace-nowrap">RONDA: {round}</span>
         </div>
 
-        <div className="flex-1 h-6 md:h-10 bg-white border-3 md:border-4 border-black relative overflow-hidden">
+        <div className="flex-1 min-w-0 h-5 md:h-10 bg-white border-2 md:border-4 border-black relative overflow-hidden">
           <motion.div
             initial={{ width: "100%" }}
             animate={{ width: `${progressPercent}%` }}
-            className="absolute inset-0 bg-nb-yellow border-r-3 md:border-r-4 border-black"
+            className="absolute inset-0 bg-nb-yellow"
           />
         </div>
 
-        <div className={`nb-card px-2 md:px-6 py-1 md:py-3 font-black text-xs md:text-2xl -rotate-1 ${timeLeft <= 5 ? "bg-nb-pink" : "bg-nb-teal"}`}>
+        <div className={`nb-card px-2 md:px-5 py-1.5 md:py-3 font-black text-xs sm:text-sm md:text-2xl -rotate-1 flex-shrink-0 ${timeLeft <= 5 ? "bg-nb-pink" : "bg-nb-teal"}`}>
           {timeLeft}s
         </div>
       </div>
@@ -243,7 +244,7 @@ export default function Game({ onGameOver, onScore, onRound, onHome }) {
             )}
           </motion.div>
         ) : (
-          <div className="w-full max-w-6xl grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-12 mt-1 md:mt-4">
+          <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-8 mt-1 md:mt-4">
             {events.map((event, index) => (
               <motion.button
                 key={event.title}
@@ -252,26 +253,28 @@ export default function Game({ onGameOver, onScore, onRound, onHome }) {
                 whileHover={{ scale: 1.02, rotate: index === 0 ? -1 : 1 }}
                 onClick={() => handleAnswer(event)}
                 disabled={result !== null}
-                className={`nb-card p-0 flex flex-col overflow-hidden text-left
-                  ${selected === event.title && result === "correct" ? "ring-2 md:ring-8 ring-nb-teal" : ""}
-                  ${selected === event.title && result === "wrong" ? "ring-2 md:ring-8 ring-nb-pink" : ""}
+                className={`nb-card p-0 flex flex-col overflow-hidden text-left h-full min-w-0
+                  ${selected === event.title && result === "correct" ? "ring-2 md:ring-4 ring-nb-teal" : ""}
+                  ${selected === event.title && result === "wrong" ? "ring-2 md:ring-4 ring-nb-pink" : ""}
                 `}
               >
-                <div className="h-48 md:h-64 lg:h-80 bg-gray-200 border-b-3 md:border-b-4 border-black relative">
+                <div className="aspect-[16/9] sm:aspect-[4/3] md:h-64 lg:h-80 md:aspect-auto bg-gray-200 border-b-3 md:border-b-4 border-black relative overflow-hidden">
                   <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
                   {selected === event.title && (
-                    <div className={`absolute inset-0 flex items-center justify-center bg-black/30 font-black text-4xl md:text-6xl text-white`}>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30 font-black text-4xl md:text-6xl text-white">
                       {result === "correct" ? "✓" : "✗"}
                     </div>
                   )}
                 </div>
-                <div className={`p-2 md:p-6 bg-white flex-1 overflow-auto`}>
-                  <h3 className="text-base md:text-2xl font-black leading-tight uppercase">{event.title}</h3>
+                <div className="p-2 sm:p-3 md:p-5 bg-white flex-1 flex flex-col gap-2 md:gap-3 min-w-0">
+                  <h3 className="text-xs sm:text-sm md:text-xl font-black leading-tight uppercase break-words line-clamp-3">
+                    {event.title}
+                  </h3>
                   {result !== null && (
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="mt-2 md:mt-4 nb-card bg-nb-yellow p-1 md:p-3 text-center font-black text-sm md:text-2xl border-3 md:border-4"
+                      className="mt-auto nb-card bg-nb-yellow px-2 py-1 md:px-3 md:py-2 text-center font-black text-xs sm:text-sm md:text-xl border-2 md:border-3"
                     >
                       AÑO: {event.year}
                     </motion.div>

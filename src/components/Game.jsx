@@ -1,8 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fetchEventPair, fetchEventPairs, getEarlierEvent } from "../utils/wikiApi";
+import {
+  consumePreloadedPair,
+  ensurePreloaded,
+  getQueueSize,
+  resetPreloadQueue,
+  subscribeToQueue,
+  getEarlierEvent,
+} from "../utils/wikiApi";
+import { randomPhrase } from "../utils/loadingPhrases";
 
-export default function Game({ onGameOver, onScore, onRound }) {
+export default function Game({ onGameOver, onScore, onRound, onHome }) {
   const [events, setEvents] = useState([]);
   const [timeLeft, setTimeLeft] = useState(15);
   const [score, setScore] = useState(0);
@@ -10,77 +18,96 @@ export default function Game({ onGameOver, onScore, onRound }) {
   const [selected, setSelected] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+  const [loadingPhrase, setLoadingPhrase] = useState(() => randomPhrase());
+  const [connectionError, setConnectionError] = useState(false);
+
   const roundRef = useRef(1);
   const scoreRef = useRef(0);
-  const loadingRef = useRef(true);
   const timerRef = useRef(null);
   const isActiveRef = useRef(false);
-  const questionQueueRef = useRef([]);
-  const queueStartRoundRef = useRef(1);
+  const errorTimerRef = useRef(null);
+  const queueUnsubRef = useRef(null);
 
-  const prefetchQuestions = useCallback(async () => {
-    if (!isActiveRef.current) return;
-    try {
-      const pairs = await fetchEventPairs(queueStartRoundRef.current, 10);
-      if (isActiveRef.current) {
-        questionQueueRef.current = [...questionQueueRef.current, ...pairs];
-      }
-    } catch (error) {
-      console.error("Error prefetching questions:", error);
+  const clearErrorTimer = () => {
+    if (errorTimerRef.current) {
+      clearTimeout(errorTimerRef.current);
+      errorTimerRef.current = null;
     }
+  };
+
+  const startErrorTimer = useCallback(() => {
+    clearErrorTimer();
+    errorTimerRef.current = setTimeout(() => {
+      if (isActiveRef.current) setConnectionError(true);
+    }, 15000);
   }, []);
 
-  const loadNewPair = useCallback(async () => {
-    if (!isActiveRef.current) return;
-    
-    if (questionQueueRef.current.length > 0) {
-      const nextPair = questionQueueRef.current.shift();
-      loadingRef.current = false;
-      setEvents(nextPair);
-      setLoading(false);
-      setSelected(null);
-      setResult(null);
-      setTimeLeft(15);
-      
-      if (questionQueueRef.current.length <= 3) {
-        queueStartRoundRef.current += 10;
-        prefetchQuestions();
-      }
-      return;
-    }
-    
-    loadingRef.current = true;
-    setLoading(true);
+  const loadNextPair = useCallback(() => {
+    if (!isActiveRef.current) return false;
+    const pair = consumePreloadedPair();
+    if (!pair) return false;
+    setEvents(pair);
     setSelected(null);
     setResult(null);
     setTimeLeft(15);
-    
-    try {
-      const pair = await fetchEventPair(roundRef.current);
-      if (!isActiveRef.current) return;
-      setEvents(pair);
-    } catch (error) {
-      console.error("Error loading events:", error);
-    }
-    loadingRef.current = false;
     setLoading(false);
-  }, [prefetchQuestions]);
+    setConnectionError(false);
+    clearErrorTimer();
+    if (getQueueSize() < 3) ensurePreloaded(5);
+    return true;
+  }, []);
+
+  const waitForPair = useCallback(() => {
+    setLoading(true);
+    startErrorTimer();
+    if (queueUnsubRef.current) queueUnsubRef.current();
+    queueUnsubRef.current = subscribeToQueue(() => {
+      if (loadNextPair()) {
+        if (queueUnsubRef.current) {
+          queueUnsubRef.current();
+          queueUnsubRef.current = null;
+        }
+      }
+    });
+  }, [loadNextPair, startErrorTimer]);
+
+  const handleRetry = useCallback(() => {
+    setConnectionError(false);
+    ensurePreloaded(3);
+    waitForPair();
+  }, [waitForPair]);
 
   useEffect(() => {
     isActiveRef.current = true;
-    
-    const initializeGame = async () => {
-      await prefetchQuestions();
-      loadNewPair();
-    };
-    initializeGame();
-    
+
+    // Anti-cheat: each new game starts with a clean queue so questions never
+    // repeat after Play Again.
+    resetPreloadQueue();
+    ensurePreloaded(5);
+
+    if (!loadNextPair()) {
+      waitForPair();
+    }
+
     return () => {
       isActiveRef.current = false;
       if (timerRef.current) clearInterval(timerRef.current);
+      clearErrorTimer();
+      if (queueUnsubRef.current) {
+        queueUnsubRef.current();
+        queueUnsubRef.current = null;
+      }
     };
-  }, [prefetchQuestions, loadNewPair]);
+  }, [loadNextPair, waitForPair]);
+
+  // Rotate humorous loading phrases every 1.8s while loading.
+  useEffect(() => {
+    if (!loading || connectionError) return;
+    const id = setInterval(() => {
+      setLoadingPhrase(randomPhrase());
+    }, 1800);
+    return () => clearInterval(id);
+  }, [loading, connectionError]);
 
   const handleAnswer = (selectedEvent) => {
     if (result !== null || !isActiveRef.current) return;
@@ -106,7 +133,9 @@ export default function Game({ onGameOver, onScore, onRound }) {
       setTimeout(() => {
         onScore(scoreRef.current);
         onRound(newRound);
-        loadNewPair();
+        if (!loadNextPair()) {
+          waitForPair();
+        }
       }, 1500);
     } else {
       setTimeout(() => {
@@ -121,7 +150,7 @@ export default function Game({ onGameOver, onScore, onRound }) {
     if (result !== null || loading || !isActiveRef.current) return;
 
     if (timerRef.current) clearInterval(timerRef.current);
-    
+
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -137,17 +166,17 @@ export default function Game({ onGameOver, onScore, onRound }) {
     };
   }, [result, loading, handleAnswer]);
 
-return (
+  return (
     <div className="w-full bg-memphis-main p-2 md:p-8 flex flex-col items-center">
-      
+
       {/* HUD de Juego */}
       <div className="w-full max-w-5xl flex justify-between items-center gap-2 md:gap-4 mb-2 md:mb-8">
         <div className="nb-card bg-white px-2 md:px-6 py-1 md:py-3 font-black text-xs md:text-2xl rotate-1">
           PUNTOS: {score} | RONDA: {round}
         </div>
-        
+
         <div className="flex-1 h-6 md:h-10 bg-white border-3 md:border-4 border-black relative overflow-hidden">
-          <motion.div 
+          <motion.div
             initial={{ width: "100%" }}
             animate={{ width: `${progressPercent}%` }}
             className="absolute inset-0 bg-nb-yellow border-r-3 md:border-r-4 border-black"
@@ -166,12 +195,52 @@ return (
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.2 }}
-            className="flex flex-1 items-center justify-center"
+            className="flex flex-1 items-center justify-center w-full px-4"
           >
-            <div className="nb-card bg-nb-purple p-6 md:p-12 text-center rotate-3">
-              <h2 className="text-2xl md:text-4xl font-black mb-2 md:mb-4">CARGANDO...</h2>
-              <p className="font-bold text-sm md:text-base">VIAJANDO EN EL TIEMPO</p>
-            </div>
+            {connectionError ? (
+              <div className="nb-card bg-nb-pink p-6 md:p-10 text-center max-w-md flex flex-col gap-4 items-center">
+                <h2 className="text-2xl md:text-4xl font-black">¡UPS!</h2>
+                <p className="font-bold text-sm md:text-base uppercase leading-snug">
+                  No pudimos conectar con Wikipedia. Comprueba tu conexión e inténtalo de nuevo.
+                </p>
+                <div className="flex flex-col gap-3 w-full">
+                  <motion.button
+                    onClick={handleRetry}
+                    whileHover={{ scale: 1.04, rotate: -1 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="nb-btn text-black font-black text-base md:text-lg py-3 px-6"
+                    style={{ backgroundColor: '#FFF44F' }}
+                  >
+                    REINTENTAR
+                  </motion.button>
+                  <motion.button
+                    onClick={onHome}
+                    whileHover={{ scale: 1.04, rotate: 1 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="nb-btn text-black font-black text-base md:text-lg py-3 px-6"
+                    style={{ backgroundColor: '#C77DFF' }}
+                  >
+                    VOLVER A HOME
+                  </motion.button>
+                </div>
+              </div>
+            ) : (
+              <div className="nb-card bg-nb-purple p-6 md:p-12 text-center rotate-3 max-w-md">
+                <h2 className="text-2xl md:text-4xl font-black mb-2 md:mb-4">CARGANDO...</h2>
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={loadingPhrase}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.35 }}
+                    className="font-bold text-sm md:text-base uppercase"
+                  >
+                    {loadingPhrase}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+            )}
           </motion.div>
         ) : (
           <div className="w-full max-w-6xl grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-12 mt-1 md:mt-4">
@@ -199,7 +268,7 @@ return (
                 <div className={`p-2 md:p-6 bg-white flex-1 overflow-auto`}>
                   <h3 className="text-base md:text-2xl font-black leading-tight uppercase">{event.title}</h3>
                   {result !== null && (
-                    <motion.div 
+                    <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       className="mt-2 md:mt-4 nb-card bg-nb-yellow p-1 md:p-3 text-center font-black text-sm md:text-2xl border-3 md:border-4"

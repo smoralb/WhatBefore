@@ -4,6 +4,7 @@ import Home from "./components/Home";
 import Game from "./components/Game";
 import GameOver from "./components/GameOver";
 import Leaderboard from "./components/Leaderboard";
+import { resetPreloadQueue } from "./utils/wikiApi";
 
 function App() {
   const [screen, setScreen] = useState("home");
@@ -70,6 +71,7 @@ function App() {
   };
 
   const handleGameOver = (finalScore) => {
+    resetPreloadQueue();
     setScore(finalScore);
     setScreen("gameover");
   };
@@ -85,6 +87,7 @@ function App() {
   };
 
   const handleHome = () => {
+    resetPreloadQueue();
     setScreen("home");
   };
 
@@ -171,7 +174,7 @@ function App() {
           <Home key="home" onStart={handleStart} onLeaderboard={handleLeaderboard} />
         )}
         {screen === "game" && (
-          <Game key="game" onGameOver={handleGameOver} onScore={handleScore} onRound={handleRound} />
+          <Game key="game" onGameOver={handleGameOver} onScore={handleScore} onRound={handleRound} onHome={handleHome} />
         )}
         {screen === "gameover" && (
           <GameOver

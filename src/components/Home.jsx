@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { ensurePreloaded } from "../utils/wikiApi";
 
 const MemphisShape = ({ type, color, top, left, delay, rotate, size = "" }) => {
   const variants = {
@@ -25,6 +27,12 @@ const MemphisShape = ({ type, color, top, left, delay, rotate, size = "" }) => {
 };
 
 export default function Home({ onStart, onLeaderboard }) {
+  useEffect(() => {
+    // Silently warm the Wikipedia preload queue while the user is on Home.
+    // By the time they press "Jugar ahora", the first pair is usually ready.
+    ensurePreloaded(3);
+  }, []);
+
   const shapes = [
     // Formas originales
     { type: "nb-zigzag", top: "10%", left: "5%", rotate: 15, delay: 0 },
